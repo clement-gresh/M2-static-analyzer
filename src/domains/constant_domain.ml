@@ -100,17 +100,32 @@ module Constants = (struct
   (* comparison operations (filters) *)
 
   let eq a b =
-    (* this is not very precise, how can we improve it ? *)
-    a, b
+    meet a b, meet a b
 
-  let neq a b =
-    a, b
+  let neq a b = match a, b with
+  | BOT, _ | _, BOT -> BOT, BOT
+  | Cst x, Cst y when x = y -> BOT, BOT
+  | _ -> a, b
+  (* | Cst x, Cst y -> Cst x, Cst y
+  | TOP, Cst x -> TOP, Cst x
+  | Cst x, TOP -> Cst x, TOP
+  | TOP, TOP -> TOP, TOP *)
 
-  let geq a b =
-    a, b
+  let geq a b = match a, b with
+    | BOT, _ | _, BOT -> BOT, BOT
+    | Cst x, Cst y when x >= y -> Cst x, Cst y
+    | Cst _, Cst _ -> BOT, BOT
+    (* | TOP, Cst y -> TOP, Cst y
+    | Cst x, TOP -> Cst x, TOP
+    | TOP, TOP -> TOP, TOP *)
+    | _ -> a, b
+    
 
-  let gt a b =
-    a, b
+  let gt a b = match a, b with
+  | Cst x, Cst y when x > y -> Cst x, Cst y
+  | Cst _, Cst _ -> BOT, BOT
+  (* | Cst x, Cst y -> geq (add (Cst x) 1) (Cst y) *)
+  | _ -> geq a b
 
 
   (* subset inclusion of concretizations *)
