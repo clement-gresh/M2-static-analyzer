@@ -73,7 +73,9 @@ module Constants = (struct
 
   let sub = lift2 Z.sub
 
-  let mul = lift2 Z.mul
+  let mul a b = 
+    if (a = Cst Z.zero || b = Cst Z.zero) then Cst Z.zero
+    else lift2 Z.mul a b 
 
   let div a b =
     if b = Cst Z.zero then BOT
@@ -124,7 +126,7 @@ module Constants = (struct
   let gt a b = match a, b with
   | Cst x, Cst y when x > y -> Cst x, Cst y
   | Cst _, Cst _ -> BOT, BOT
-  (* | Cst x, Cst y -> geq (add (Cst x) 1) (Cst y) *)
+  (* | Cst x, Cst y -> geq (add (Cst x) (Cst Z.one)) (Cst y) *)
   | _ -> geq a b
 
 
