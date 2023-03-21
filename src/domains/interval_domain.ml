@@ -88,6 +88,16 @@ module Intervals = (struct
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
 
+  let leq a b = match a, b with
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne y2 x1 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
+  | _, _ -> BOT, BOT
+
+  (*debug : à vérifier*)
+  let lt a b = match a, b with
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne y2 x1 -> INTERVAL(x1, min_borne x2 (sub_borne y2 (Cst Z.one))),
+                                                              INTERVAL(max_borne (add_borne x1 (Cst Z.one)) y1, y2)
+  | _, _ -> BOT, BOT
+
   let geq (a:t) (b:t) : t*t = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x2 y1 -> INTERVAL(max_borne x1 y1, x2), INTERVAL(y1, min_borne x2 y2)
   (*| INTERVAL(x1, x2), INTERVAL(y1, y2) -> BOT, BOT
