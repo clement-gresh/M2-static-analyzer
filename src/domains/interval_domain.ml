@@ -33,14 +33,28 @@ module Intervals = (struct
   let min_borne a b = match a, b with
   | NEG_INF, _ | _, NEG_INF -> NEG_INF
   | POS_INF, x | x, POS_INF -> x
-  | x, y when x > y -> y
+  | Cst x, Cst y when x > y -> Cst y
   | x, _ -> x
   
   let max_borne a b = match a, b with
   | POS_INF, _ | _, POS_INF -> POS_INF
   | NEG_INF, x | x, NEG_INF -> x
-  | x, y when x > y -> x
+  | Cst x, Cst y when x > y -> Cst x
   | _, x -> x
+
+  let geq_borne a b = match a, b with
+  | NEG_INF, _ | _, POS_INF -> true
+  | POS_INF, _ | _, NEG_INF -> false
+  | Cst x, Cst y when x <= y -> true
+  | _, _ -> false
+
+  let gt_borne a b = match a, b with
+  | Cst x, y -> geq_borne (add_borne (Cst x) (Cst Z.one)) y
+  | x, y -> geq_borne x y   (*debug : is POS_INF strictly greater than POS_INF ?*)
+  (* | NEG_INF, _ | _, POS_INF -> true
+  | POS_INF, _ | _, NEG_INF -> false
+  | Cst x, Cst y when x < y -> true
+  | _, _ -> false *)
 
   let add a b = match a, b with
   | BOT, _ | _, BOT -> BOT
@@ -70,7 +84,7 @@ module Intervals = (struct
   | INTERVAL(x, y) -> Format.fprintf fmt "[%s, %s]" (print_borne x) (print_borne y)
 
   let geq (a:t) (b:t) : t*t = match a, b with
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x1 <= y2 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x1 y2 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
   (*| INTERVAL(x1, x2), INTERVAL(y1, y2) -> BOT, BOT
   | BOT, _ | _, BOT -> BOT, BOT*)
   | _, _ -> BOT, BOT
@@ -78,10 +92,13 @@ module Intervals = (struct
   (*debug : à vérifier*)
   let gt (a:t) (b:t) : t*t = match a, b with
   (* | INTERVAL(x1, x2), INTERVAL(y1, y2) -> geq INTERVAL(add_borne x1 (Cst Z.one), add_borne x2 (Cst Z.one)) INTERVAL(y1, y2) *)
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x1 < y2 -> INTERVAL(x1, min_borne x2 (sub_borne y2 (Cst Z.one))),
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x1 y2 -> INTERVAL(x1, min_borne x2 (sub_borne y2 (Cst Z.one))),
                                                         INTERVAL(max_borne (add_borne x1 (Cst Z.one)) y1, y2)
   | _, _ -> BOT, BOT
 
+  (* let subset a b = match a,b with
+  | BOT, _ | _, INTERVAL(NEG_INF, POS_INF) -> true
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x1 == NEG_INF -> *)
 
   (*debug start*)
   let bwd_binary = assert false
