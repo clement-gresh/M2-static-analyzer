@@ -56,6 +56,20 @@ module Intervals = (struct
   | Cst x, Cst y when x < y -> true
   | _, _ -> false *)
 
+  let print_borne a = match a with
+  | NEG_INF -> "-∞"
+  | POS_INF -> "+∞"
+  | Cst x -> Z.to_string x
+  
+  let print fmt x = match x with
+  | BOT -> Format.fprintf fmt "⊥"
+  | INTERVAL(x, y) -> Format.fprintf fmt "[%s;%s]" (print_borne x) (print_borne y)
+
+  let subset a b = match a,b with
+  | BOT, _ | _, INTERVAL(NEG_INF, POS_INF) -> true
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x1 y1 && geq_borne y2 x2 -> true
+  | _, _ -> false
+
   let add a b = match a, b with
   | BOT, _ | _, BOT -> BOT
   | INTERVAL(x1, x2), INTERVAL(y1, y2) -> INTERVAL(add_borne x1 y1, add_borne x2 y2)
@@ -74,15 +88,6 @@ module Intervals = (struct
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
 
-  let print_borne a = match a with
-  | NEG_INF -> "-∞"
-  | POS_INF -> "+∞"
-  | Cst x -> Z.to_string x
-  
-  let print fmt x = match x with
-  | BOT -> Format.fprintf fmt "⊥"
-  | INTERVAL(x, y) -> Format.fprintf fmt "[%s, %s]" (print_borne x) (print_borne y)
-
   let geq (a:t) (b:t) : t*t = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x2 y1 -> INTERVAL(max_borne x1 y1, x2), INTERVAL(y1, min_borne x2 y2)
   (*| INTERVAL(x1, x2), INTERVAL(y1, y2) -> BOT, BOT
@@ -95,10 +100,6 @@ module Intervals = (struct
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x2 y1 -> INTERVAL(max_borne x1 (add_borne y2 (Cst Z.one)), x2),
                                                         INTERVAL(y1, max_borne (sub_borne x2 (Cst Z.one)) y2)
   | _, _ -> BOT, BOT
-
-  (* let subset a b = match a,b with
-  | BOT, _ | _, INTERVAL(NEG_INF, POS_INF) -> true
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x1 y1 && geq_borne  -> *)
 
   (*debug start*)
   let bwd_binary = assert false
