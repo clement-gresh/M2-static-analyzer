@@ -52,6 +52,23 @@ module Intervals = (struct
   | NEG_INF, _ | _, POS_INF -> false
   | Cst x, Cst y when x >= y -> true
   | _, _ -> false
+  let eq_borne (b1:borne) (b2:borne) : bool =
+    match b1, b2 with
+    | Cst x, Cst y -> Z.equal x y
+    | POS_INF, POS_INF -> true
+    | NEG_INF, NEG_INF -> true
+    | _, _ -> false 
+
+
+    let eq (i1:t) (i2:t) : bool =
+    match i1, i2 with
+    | INTERVAL (b1, b2), INTERVAL (b3, b4) -> eq_borne b1 b3 && eq_borne b2 b4
+    | BOT, BOT -> true
+    | _, _ -> false 
+
+  let neq (d1:t) (d2:t) : bool =
+    not (eq d1 d2)
+
 
   let gt_borne a b = match a, b with
   | x, Cst y -> geq_borne x (add_borne (Cst y) (Cst Z.one))
@@ -60,6 +77,65 @@ module Intervals = (struct
   | POS_INF, _ | _, NEG_INF -> false
   | Cst x, Cst y when x < y -> true
   | _, _ -> false *)
+  let gt_zero a = match a with
+	| Cst c -> c > Z.zero
+	| _ -> false
+  let mul_born a b = match a,b  with
+	| Cst x, Cst y -> Cst (Z.mul x y)
+	| NEG_INF,NEG_INF -> POS_INF 
+	| POS_INF,POS_INF -> POS_INF 
+	| NEG_INF, POS_INF | POS_INF,NEG_INF -> NEG_INF
+	| NEG_INF, Cst x | Cst x,NEG_INF ->
+		if x = Z.zero then
+			Cst Z.zero
+		else 
+			if x < Z.zero then
+				POS_INF
+			else
+				NEG_INF
+	| POS_INF, Cst x | Cst x,POS_INF ->
+		if x = Z.zero then
+			Cst Z.zero
+		else 
+			if x < Z.zero then
+				NEG_INF
+			else
+				POS_INF
+let mul x y = match x,y with
+  | BOT,_ | _, BOT -> BOT
+  | INTERVAL(a, b), INTERVAL(c, d) ->
+    let ac = mul_born a c in
+    let ad = mul_born a d in
+    let bc = mul_born b c in
+    let bd = mul_born b d in
+    let borne_inf = min (min ac ad) (min bc bd) in
+    let borne_max = max (max ac ad) (max bc bd) in
+    INTERVAL(borne_inf, borne_max)
+let div_born a b = match a,b  with
+  | Cst x, Cst y -> Cst (Z.div x y)
+  | x,NEG_INF | x,POS_INF -> Cst Z.zero
+  | POS_INF, Cst x -> if x > Z.zero then
+        POS_INF
+          else
+        NEG_INF				
+    | NEG_INF, Cst x -> if x > Z.zero then
+        NEG_INF
+          else
+        POS_INF	
+let div x y = match x,y with
+	| BOT,_ | _,BOT -> BOT
+  | INTERVAL (_, _), INTERVAL(Cst x1, _) when x1 = Z.zero -> BOT
+  | INTERVAL (_, _), INTERVAL(_, Cst x1) when x1 = Z.zero -> BOT
+	| INTERVAL(a,b), INTERVAL(c,d) -> 
+			let ac = div_born a c in
+			let ad = div_born a d in
+			let bc = div_born b c in
+			let bd = div_born b d in
+			let borne_inf = if gt_zero c then
+				 min ac ad else min bc bd in
+			let borne_sup = if gt_zero c then
+				 min bc bd else max ac ad in
+			INTERVAL(borne_inf,borne_sup)
 
   let print_borne a = match a with
   | NEG_INF -> "-∞"
@@ -120,22 +196,15 @@ module Intervals = (struct
                                                         INTERVAL(y1, max_borne (sub_borne x2 (Cst Z.one)) y2)
   | _, _ -> BOT, BOT
 
-  (*debug start*)
-  let lift1 = assert false
-  let lift2 = assert false
-  let bwd_binary = assert false
-  let bwd_unary = assert false
-  let compare = assert false
-  let widen = assert false
-  let binary = assert false
-  let unary = assert false
-  let is_bottom = assert false (*ok*)
-  let rand = assert false
-  (*debug end*)
-
   
   (* operator dispatch *)
-
+  let widen = join
+  let rand x y =
+    if x=y then const x (* [x,x] *)
+    else if x<y then INTERVAL(Cst x, Cst y) (* [x ,y]*)
+    else BOT
+  let is_bottom a =
+    a=BOT
   let unary x op = match op with
   | AST_UNARY_PLUS  -> x
   | AST_UNARY_MINUS -> neg x
