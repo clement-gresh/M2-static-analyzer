@@ -60,6 +60,29 @@ module Intervals = (struct
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
 
+  let print_borne a = match a with
+  | NEG_INF -> "-∞"
+  | POS_INF -> "+∞"
+  | Cst x -> Z.to_string x
+  
+  let print fmt x = match x with
+  | BOT -> Format.fprintf fmt "⊥"
+  | INTERVAL(x, y) -> Format.fprintf fmt "[%s, %s]" (print_borne x) (print_borne y)
+
+  let geq (a:t) (b:t) : t*t = match a, b with
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x1 <= y2 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
+  (*| INTERVAL(x1, x2), INTERVAL(y1, y2) -> BOT, BOT
+  | BOT, _ | _, BOT -> BOT, BOT*)
+  | _, _ -> BOT, BOT
+
+  (*debug : à vérifier*)
+  let gt (a:t) (b:t) : t*t = match a, b with
+  (* | INTERVAL(x1, x2), INTERVAL(y1, y2) -> geq INTERVAL(add_borne x1 (Cst Z.one), add_borne x2 (Cst Z.one)) INTERVAL(y1, y2) *)
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x1 < y2 -> INTERVAL(x1, min_borne x2 (sub_borne y2 (Cst Z.one))),
+                                                        INTERVAL(max_borne (add_borne x1 (Cst Z.one)) y1, y2)
+  | _, _ -> BOT, BOT
+
+
   (*debug start*)
   let bwd_binary = assert false
   let bwd_unary = assert false
@@ -67,9 +90,8 @@ module Intervals = (struct
   let widen = assert false
   let binary = assert false
   let unary = assert false
-  let print = assert false
-  let is_bottom = assert false
-  let subset = assert false
+  let is_bottom = assert false (*ok*)
+  let subset = assert false (*subset a b checks if a is included in b*)
   let rand = assert false
   (*debug end*)
 
