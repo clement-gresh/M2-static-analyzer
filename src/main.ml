@@ -17,7 +17,7 @@ module ConstantAnalysis =
 module IntervalAnalysis =
     Interpreter.Interprete
       (Non_relational_domain.NonRelational
-        (Interval_domain.Interval))
+        (Interval_domain.Intervals))
 
 (* parse and print filename *)
 let doit filename =
