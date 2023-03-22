@@ -18,6 +18,11 @@ module Intervals = (struct
   
   let const c = INTERVAL(Cst c, Cst c)
 
+  let print_borne a = match a with
+  | NEG_INF -> "-∞"
+  | POS_INF -> "+∞"
+  | Cst x -> Z.to_string x
+
   let neg_borne a = match a with
   | POS_INF -> NEG_INF
   | NEG_INF -> POS_INF
@@ -52,6 +57,7 @@ module Intervals = (struct
   | NEG_INF, _ | _, POS_INF -> false
   | Cst x, Cst y when x >= y -> true
   | _, _ -> false
+
   let eq_borne (b1:borne) (b2:borne) : bool =
     match b1, b2 with
     | Cst x, Cst y -> Z.equal x y
@@ -59,8 +65,49 @@ module Intervals = (struct
     | NEG_INF, NEG_INF -> true
     | _, _ -> false 
 
-
-    let eq (i1:t) (i2:t) : bool =
+  let div_born a b = match a,b  with
+    | Cst x, Cst y -> Cst (Z.div x y)
+    | x,NEG_INF | x,POS_INF -> Cst Z.zero
+    | POS_INF, Cst x -> if x > Z.zero then
+          POS_INF
+            else
+          NEG_INF				
+      | NEG_INF, Cst x -> if x > Z.zero then
+          NEG_INF
+            else
+          POS_INF	
+  
+          let mul_born a b = match a,b  with
+          | Cst x, Cst y -> Cst (Z.mul x y)
+          | NEG_INF,NEG_INF -> POS_INF 
+          | POS_INF,POS_INF -> POS_INF 
+          | NEG_INF, POS_INF | POS_INF,NEG_INF -> NEG_INF
+          | NEG_INF, Cst x | Cst x,NEG_INF ->
+              if x = Z.zero then
+                  Cst Z.zero
+              else 
+                  if x < Z.zero then
+                      POS_INF
+                  else
+                      NEG_INF
+          | POS_INF, Cst x | Cst x,POS_INF ->
+              if x = Z.zero then
+                  Cst Z.zero
+              else 
+                  if x < Z.zero then
+                      NEG_INF
+                  else
+                      POS_INF
+  
+  let gt_borne a b = match a, b with
+  | x, Cst y -> geq_borne x (add_borne (Cst y) (Cst Z.one))
+  | x, y -> geq_borne x y   (*debug : is POS_INF strictly greater than POS_INF ?*)
+  (* | NEG_INF, _ | _, POS_INF -> true
+  | POS_INF, _ | _, NEG_INF -> false
+  | Cst x, Cst y when x < y -> true
+  | _, _ -> false *)
+    
+  let eq (i1:t) (i2:t) : bool =
     match i1, i2 with
     | INTERVAL (b1, b2), INTERVAL (b3, b4) -> eq_borne b1 b3 && eq_borne b2 b4
     | BOT, BOT -> true
@@ -69,39 +116,11 @@ module Intervals = (struct
   let neq (d1:t) (d2:t) : bool =
     not (eq d1 d2)
 
-
-  let gt_borne a b = match a, b with
-  | x, Cst y -> geq_borne x (add_borne (Cst y) (Cst Z.one))
-  | x, y -> geq_borne x y   (*debug : is POS_INF strictly greater than POS_INF ?*)
-  (* | NEG_INF, _ | _, POS_INF -> true
-  | POS_INF, _ | _, NEG_INF -> false
-  | Cst x, Cst y when x < y -> true
-  | _, _ -> false *)
   let gt_zero a = match a with
 	| Cst c -> c > Z.zero
 	| _ -> false
-  let mul_born a b = match a,b  with
-	| Cst x, Cst y -> Cst (Z.mul x y)
-	| NEG_INF,NEG_INF -> POS_INF 
-	| POS_INF,POS_INF -> POS_INF 
-	| NEG_INF, POS_INF | POS_INF,NEG_INF -> NEG_INF
-	| NEG_INF, Cst x | Cst x,NEG_INF ->
-		if x = Z.zero then
-			Cst Z.zero
-		else 
-			if x < Z.zero then
-				POS_INF
-			else
-				NEG_INF
-	| POS_INF, Cst x | Cst x,POS_INF ->
-		if x = Z.zero then
-			Cst Z.zero
-		else 
-			if x < Z.zero then
-				NEG_INF
-			else
-				POS_INF
-let mul x y = match x,y with
+
+  let mul x y = match x,y with
   | BOT,_ | _, BOT -> BOT
   | INTERVAL(a, b), INTERVAL(c, d) ->
     let ac = mul_born a c in
@@ -111,37 +130,22 @@ let mul x y = match x,y with
     let borne_inf = min (min ac ad) (min bc bd) in
     let borne_max = max (max ac ad) (max bc bd) in
     INTERVAL(borne_inf, borne_max)
-let div_born a b = match a,b  with
-  | Cst x, Cst y -> Cst (Z.div x y)
-  | x,NEG_INF | x,POS_INF -> Cst Z.zero
-  | POS_INF, Cst x -> if x > Z.zero then
-        POS_INF
-          else
-        NEG_INF				
-    | NEG_INF, Cst x -> if x > Z.zero then
-        NEG_INF
-          else
-        POS_INF	
+
 let div x y = match x,y with
-	| BOT,_ | _,BOT -> BOT
+  | BOT,_ | _,BOT -> BOT
   | INTERVAL (_, _), INTERVAL(Cst x1, _) when x1 = Z.zero -> BOT
   | INTERVAL (_, _), INTERVAL(_, Cst x1) when x1 = Z.zero -> BOT
-	| INTERVAL(a,b), INTERVAL(c,d) -> 
-			let ac = div_born a c in
-			let ad = div_born a d in
-			let bc = div_born b c in
-			let bd = div_born b d in
-			let borne_inf = if gt_zero c then
-				 min ac ad else min bc bd in
-			let borne_sup = if gt_zero c then
-				 min bc bd else max ac ad in
-			INTERVAL(borne_inf,borne_sup)
+  | INTERVAL(a,b), INTERVAL(c,d) -> 
+        let ac = div_born a c in
+        let ad = div_born a d in
+        let bc = div_born b c in
+        let bd = div_born b d in
+        let borne_inf = if gt_zero c then
+                min ac ad else min bc bd in
+        let borne_sup = if gt_zero c then
+                min bc bd else max ac ad in
+        INTERVAL(borne_inf,borne_sup)
 
-  let print_borne a = match a with
-  | NEG_INF -> "-∞"
-  | POS_INF -> "+∞"
-  | Cst x -> Z.to_string x
-  
   let print fmt x = match x with
   | BOT -> Format.fprintf fmt "⊥"
   | INTERVAL(x, y) -> Format.fprintf fmt "[%s;%s]" (print_borne x) (print_borne y)
@@ -195,7 +199,6 @@ let div x y = match x,y with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x2 y1 -> INTERVAL(max_borne x1 (add_borne y2 (Cst Z.one)), x2),
                                                         INTERVAL(y1, max_borne (sub_borne x2 (Cst Z.one)) y2)
   | _, _ -> BOT, BOT
-
   
   (* operator dispatch *)
   let widen = join
@@ -223,11 +226,9 @@ let div x y = match x,y with
   | AST_LESS_EQUAL    -> let y',x' = geq y x in x',y'
   | AST_LESS          -> let y',x' = gt y x in x',y'
 
-
   let bwd_unary x op r = match op with
   | AST_UNARY_PLUS  -> meet x r
   | AST_UNARY_MINUS -> meet x (neg r)
-
 
   let bwd_binary x y op r = match op with
 
