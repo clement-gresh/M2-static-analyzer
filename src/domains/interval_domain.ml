@@ -60,14 +60,23 @@ module Intervals = (struct
     | _, _ -> false 
 
 
-    let eq (i1:t) (i2:t) : bool =
-    match i1, i2 with
-    | INTERVAL (b1, b2), INTERVAL (b3, b4) -> eq_borne b1 b3 && eq_borne b2 b4
-    | BOT, BOT -> true
-    | _, _ -> false 
+    let eq (i1:t) (i2:t) : t * t =
+      match i1, i2 with
+      | INTERVAL (b1, b2), INTERVAL (b3, b4) ->
+          let eq_b1_b3 = eq_borne b1 b3 in
+          let eq_b2_b4 = eq_borne b2 b4 in
+          if eq_b1_b3 && eq_b2_b4 then (INTERVAL (b1, b2), INTERVAL (b3, b4))
+          else (i1, i2)
+      | BOT, BOT -> (BOT, BOT)
+      | _, _ -> (i1, i2)
+    
 
-  let neq (d1:t) (d2:t) : bool =
-    not (eq d1 d2)
+      let neq (d1:t) (d2:t) : t * t =
+        match eq d1 d2 with
+        | (i1, i2) when i1 = BOT && i2 = BOT -> (INTERVAL (NEG_INF, POS_INF), INTERVAL (NEG_INF, POS_INF))
+        | (i1, i2) when i1 = i2 -> (BOT, BOT)
+        | _ -> (d1, d2)
+      
 
 
   let gt_borne a b = match a, b with
@@ -113,7 +122,7 @@ let mul x y = match x,y with
     INTERVAL(borne_inf, borne_max)
 let div_born a b = match a,b  with
   | Cst x, Cst y -> Cst (Z.div x y)
-  | x,NEG_INF | x,POS_INF -> Cst Z.zero
+  | _, NEG_INF | _, POS_INF -> Cst Z.zero
   | POS_INF, Cst x -> if x > Z.zero then
         POS_INF
           else
@@ -173,15 +182,15 @@ let div x y = match x,y with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
 
-  let leq a b = match a, b with
+  (*let leq a b = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne y2 x1 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
-  | _, _ -> BOT, BOT
+  | _, _ -> BOT, BOT*)
 
   (*debug : à vérifier*)
-  let lt a b = match a, b with
+  (*let lt a b = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne y2 x1 -> INTERVAL(x1, min_borne x2 (sub_borne y2 (Cst Z.one))),
                                                               INTERVAL(max_borne (add_borne x1 (Cst Z.one)) y1, y2)
-  | _, _ -> BOT, BOT
+  | _, _ -> BOT, BOT*)
 
   let geq (a:t) (b:t) : t*t = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x2 y1 -> INTERVAL(max_borne x1 y1, x2), INTERVAL(y1, min_borne x2 y2)
