@@ -60,7 +60,6 @@ module Intervals = (struct
 
     let eq z u =
       match z, u with
-      (* x x ? *)
       | INTERVAL(NEG_INF, POS_INF), x | x, INTERVAL(NEG_INF, POS_INF) -> x, x
       | BOT, _ | _, BOT -> BOT, BOT
       | _ -> let intersection = meet z u in
@@ -78,24 +77,18 @@ module Intervals = (struct
                 | INTERVAL(NEG_INF, POS_INF), _ | _, INTERVAL(NEG_INF, POS_INF)
                 | BOT, _ | _, BOT -> z, u
                 | INTERVAL(a, b), INTERVAL(c, d) ->
-                (* Premier intervalle est une constante *)
                 if a = b then
-                        (* Si l'autre intervalle est une constante également *)
                         if c = d then
-                                (* On compare les deux constantes *)
                                 if a = c then
                                         BOT, BOT
                                 else
                                         z, u
-                        (* Si la constante est l'une des deux bornes de l'autre intervalle *)
                         else if a = c then
                                 z, INTERVAL(add_one c, d)
                         else if a = d then
                                 z, INTERVAL(c, sub_one d)
                         else
-                                (*TODO peut etre BOT, BOT *)
                                 z, u
-                (* Deuxième intervalle est une constante *)
                 else if c = d then
                         if c = a then
                           INTERVAL(add_one a, b), u
@@ -103,7 +96,6 @@ module Intervals = (struct
                                 INTERVAL(a, sub_one b), u
                         else
                                 z, u
-                (* Si deux intervalles, on ne peut pas les filtrer *)
                 else
                         z, u
         
