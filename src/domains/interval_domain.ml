@@ -51,31 +51,62 @@ module Intervals = (struct
   | POS_INF, _ | _, NEG_INF -> true
   | NEG_INF, _ | _, POS_INF -> false
   | Cst x, Cst y when x >= y -> true
-  | _, _ -> false
-  let eq_borne (b1:borne) (b2:borne) : bool =
-    match b1, b2 with
-    | Cst x, Cst y -> Z.equal x y
-    | POS_INF, POS_INF -> true
-    | NEG_INF, NEG_INF -> true
-    | _, _ -> false 
+  | _, _ -> false 
+  let meet a b = match a, b with
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 >= y1 || x1 <= y2 -> INTERVAL(max_borne x1 y1, min_borne x2 y2)
+  (*| BOT, _ | _, BOT -> BOT
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
+  | _, _ -> BOT
 
-
-    let eq (i1:t) (i2:t) : t * t =
-      match i1, i2 with
-      | INTERVAL (b1, b2), INTERVAL (b3, b4) ->
-          let eq_b1_b3 = eq_borne b1 b3 in
-          let eq_b2_b4 = eq_borne b2 b4 in
-          if eq_b1_b3 && eq_b2_b4 then (INTERVAL (b1, b2), INTERVAL (b3, b4))
-          else (i1, i2)
-      | BOT, BOT -> (BOT, BOT)
-      | _, _ -> (i1, i2)
-    
-
-      let neq (d1:t) (d2:t) : t * t =
-        match eq d1 d2 with
-        | (i1, i2) when i1 = BOT && i2 = BOT -> (INTERVAL (NEG_INF, POS_INF), INTERVAL (NEG_INF, POS_INF))
-        | (i1, i2) when i1 = i2 -> (BOT, BOT)
-        | _ -> (d1, d2)
+    let eq z u =
+      match z, u with
+      (* x x ? *)
+      | INTERVAL(NEG_INF, POS_INF), x | x, INTERVAL(NEG_INF, POS_INF) -> x, x
+      | BOT, _ | _, BOT -> BOT, BOT
+      | _ -> let intersection = meet z u in
+              intersection, intersection
+              let sub_one borne =
+                match borne with
+                | Cst x -> Cst (Z.sub x Z.one)
+                | _ -> borne
+              let add_one borne =
+                match borne with
+                | Cst x -> Cst (Z.add x Z.one)
+                | _ -> borne
+              let neq z u =
+                match z, u with
+                | INTERVAL(NEG_INF, POS_INF), _ | _, INTERVAL(NEG_INF, POS_INF)
+                | BOT, _ | _, BOT -> z, u
+                | INTERVAL(a, b), INTERVAL(c, d) ->
+                (* Premier intervalle est une constante *)
+                if a = b then
+                        (* Si l'autre intervalle est une constante également *)
+                        if c = d then
+                                (* On compare les deux constantes *)
+                                if a = c then
+                                        BOT, BOT
+                                else
+                                        z, u
+                        (* Si la constante est l'une des deux bornes de l'autre intervalle *)
+                        else if a = c then
+                                z, INTERVAL(add_one c, d)
+                        else if a = d then
+                                z, INTERVAL(c, sub_one d)
+                        else
+                                (*TODO peut etre BOT, BOT *)
+                                z, u
+                (* Deuxième intervalle est une constante *)
+                else if c = d then
+                        if c = a then
+                          INTERVAL(add_one a, b), u
+                        else if c = b then
+                                INTERVAL(a, sub_one b), u
+                        else
+                                z, u
+                (* Si deux intervalles, on ne peut pas les filtrer *)
+                else
+                        z, u
+        
       
 
 
@@ -89,62 +120,56 @@ module Intervals = (struct
   let gt_zero a = match a with
 	| Cst c -> c > Z.zero
 	| _ -> false
-  let mul_born a b = match a,b  with
-	| Cst x, Cst y -> Cst (Z.mul x y)
-	| NEG_INF,NEG_INF -> POS_INF 
-	| POS_INF,POS_INF -> POS_INF 
-	| NEG_INF, POS_INF | POS_INF,NEG_INF -> NEG_INF
-	| NEG_INF, Cst x | Cst x,NEG_INF ->
-		if x = Z.zero then
-			Cst Z.zero
-		else 
-			if x < Z.zero then
-				POS_INF
-			else
-				NEG_INF
-	| POS_INF, Cst x | Cst x,POS_INF ->
-		if x = Z.zero then
-			Cst Z.zero
-		else 
-			if x < Z.zero then
-				NEG_INF
-			else
-				POS_INF
-let mul x y = match x,y with
-  | BOT,_ | _, BOT -> BOT
-  | INTERVAL(a, b), INTERVAL(c, d) ->
-    let ac = mul_born a c in
-    let ad = mul_born a d in
-    let bc = mul_born b c in
-    let bd = mul_born b d in
-    let borne_inf = min (min ac ad) (min bc bd) in
-    let borne_max = max (max ac ad) (max bc bd) in
-    INTERVAL(borne_inf, borne_max)
-let div_born a b = match a,b  with
-  | Cst x, Cst y -> Cst (Z.div x y)
-  | _, NEG_INF | _, POS_INF -> Cst Z.zero
-  | POS_INF, Cst x -> if x > Z.zero then
-        POS_INF
-          else
-        NEG_INF				
-    | NEG_INF, Cst x -> if x > Z.zero then
-        NEG_INF
-          else
-        POS_INF	
-let div x y = match x,y with
-	| BOT,_ | _,BOT -> BOT
-  | INTERVAL (_, _), INTERVAL(Cst x1, _) when x1 = Z.zero -> BOT
-  | INTERVAL (_, _), INTERVAL(_, Cst x1) when x1 = Z.zero -> BOT
-	| INTERVAL(a,b), INTERVAL(c,d) -> 
-			let ac = div_born a c in
-			let ad = div_born a d in
-			let bc = div_born b c in
-			let bd = div_born b d in
-			let borne_inf = if gt_zero c then
-				 min ac ad else min bc bd in
-			let borne_sup = if gt_zero c then
-				 min bc bd else max ac ad in
-			INTERVAL(borne_inf,borne_sup)
+  let mul_bornes borneA borneB =
+    match borneA, borneB with
+    | Cst x, Cst y -> Cst (Z.mul x y)
+    | NEG_INF, POS_INF | POS_INF, NEG_INF -> NEG_INF
+    | NEG_INF, NEG_INF -> POS_INF
+    | POS_INF, Cst x | Cst x, POS_INF ->
+            if x = Z.zero then Cst Z.zero
+            else if x < Z.zero then NEG_INF else POS_INF
+    | NEG_INF, Cst x | Cst x, NEG_INF ->
+            if x = Z.zero then Cst Z.zero
+            else if x > Z.zero then NEG_INF else POS_INF
+    | POS_INF, POS_INF -> POS_INF
+
+
+(* Le cas ou l'une des bornes est nulle est déjà traitée dans apply_diff_zero *)
+let div_bornes borneA borneB =
+    match borneA, borneB with
+    | Cst x, Cst y -> Cst (Z.div x y)
+    | _, POS_INF | _, NEG_INF -> Cst(Z.zero)
+    | POS_INF, Cst x -> if x < Z.zero then NEG_INF else POS_INF
+    | NEG_INF, Cst x -> if x > Z.zero then NEG_INF else POS_INF
+  let mul z u =
+    match z, u with
+    | BOT , _  | _, BOT -> BOT
+    | INTERVAL(NEG_INF, POS_INF)  , _ | _, INTERVAL(NEG_INF, POS_INF)  -> INTERVAL(NEG_INF, POS_INF) 
+    | INTERVAL(a, b), INTERVAL(c, d) ->
+            let ac = mul_bornes a c in
+            let ad = mul_bornes a d in
+            let bc = mul_bornes b c in
+            let bd = mul_bornes b d in
+            let borne_inf = min (min ac ad) (min bc bd) in
+            let borne_max = max (max ac ad) (max bc bd) in
+            INTERVAL(borne_inf, borne_max)
+
+let div z u =
+    match z, u with
+    | BOT , _  | _, BOT -> BOT
+    | INTERVAL(NEG_INF, POS_INF)  , _ | _, INTERVAL(NEG_INF, POS_INF)  -> INTERVAL(NEG_INF, POS_INF) 
+    | INTERVAL (_, _), INTERVAL(Cst x, _) when x = Z.zero -> BOT
+    | INTERVAL (_, _), INTERVAL(_, Cst x) when x = Z.zero -> BOT
+    | INTERVAL(a, b), INTERVAL(c, d) ->
+            let ac = div_bornes a c in
+            let ad = div_bornes a d in
+            let bc = div_bornes b c in
+            let bd = div_bornes b d in
+            let borne_inf = if gt_zero c then
+                    min ac ad else min bc bd in
+            let borne_sup = if gt_zero c then
+                    max bc bd else max ac ad in
+            INTERVAL(borne_inf, borne_sup)
 
   let print_borne a = match a with
   | NEG_INF -> "-∞"
@@ -176,11 +201,6 @@ let div x y = match x,y with
   | BOT, x | x, BOT -> x
   | INTERVAL(x1, x2), INTERVAL(y1, y2) -> INTERVAL(min_borne x1 y1, max_borne x2 y2)
 
-  let meet a b = match a, b with
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 >= y1 || x1 <= y2 -> INTERVAL(max_borne x1 y1, min_borne x2 y2)
-  (*| BOT, _ | _, BOT -> BOT
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
-  | _, _ -> BOT
 
   (*let leq a b = match a, b with
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne y2 x1 -> INTERVAL(x1, min_borne x2 y2), INTERVAL(max_borne x1 y1, y2)
