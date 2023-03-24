@@ -213,8 +213,8 @@ let div z u =
   (*debug : à vérifier*)
   let gt (a:t) (b:t) : t*t = match a, b with
   (* | INTERVAL(x1, x2), INTERVAL(y1, y2) -> geq INTERVAL(add_borne x1 (Cst Z.one), add_borne x2 (Cst Z.one)) INTERVAL(y1, y2) *)
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x2 y1 -> INTERVAL(max_borne x1 (add_borne y2 (Cst Z.one)), x2),
-                                                        INTERVAL(y1, max_borne (sub_borne x2 (Cst Z.one)) y2)
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x2 y1 -> INTERVAL(max_borne x1 (add_borne y1 (Cst Z.one)), x2),
+                                                        INTERVAL(y1, min_borne (sub_borne x2 (Cst Z.one)) y2)
   | _, _ -> BOT, BOT
   
   (* operator dispatch *)
