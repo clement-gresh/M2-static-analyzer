@@ -18,6 +18,11 @@ module Intervals = (struct
   
   let const c = INTERVAL(Cst c, Cst c)
 
+  let print_borne a = match a with
+  | NEG_INF -> "-∞"
+  | POS_INF -> "+∞"
+  | Cst x -> Z.to_string x
+
   let neg_borne a = match a with
   | POS_INF -> NEG_INF
   | NEG_INF -> POS_INF
@@ -58,6 +63,14 @@ module Intervals = (struct
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
 
+  let gt_borne a b = match a, b with
+  | x, Cst y -> geq_borne x (add_borne (Cst y) (Cst Z.one))
+  | x, y -> geq_borne x y   (*debug : is POS_INF strictly greater than POS_INF ?*)
+  (* | NEG_INF, _ | _, POS_INF -> true
+  | POS_INF, _ | _, NEG_INF -> false
+  | Cst x, Cst y when x < y -> true
+  | _, _ -> false *)
+    
     let eq z u =
       match z, u with
       | INTERVAL(NEG_INF, POS_INF), x | x, INTERVAL(NEG_INF, POS_INF) -> x, x
@@ -101,14 +114,6 @@ module Intervals = (struct
         
       
 
-
-  let gt_borne a b = match a, b with
-  | x, Cst y -> geq_borne x (add_borne (Cst y) (Cst Z.one))
-  | x, y -> geq_borne x y   (*debug : is POS_INF strictly greater than POS_INF ?*)
-  (* | NEG_INF, _ | _, POS_INF -> true
-  | POS_INF, _ | _, NEG_INF -> false
-  | Cst x, Cst y when x < y -> true
-  | _, _ -> false *)
   let gt_zero a = match a with
 	| Cst c -> c > Z.zero
 	| _ -> false
@@ -163,11 +168,6 @@ let div z u =
                     max bc bd else max ac ad in
             INTERVAL(borne_inf, borne_sup)
 
-  let print_borne a = match a with
-  | NEG_INF -> "-∞"
-  | POS_INF -> "+∞"
-  | Cst x -> Z.to_string x
-  
   let print fmt x = match x with
   | BOT -> Format.fprintf fmt "⊥"
   | INTERVAL(x, y) -> Format.fprintf fmt "[%s;%s]" (print_borne x) (print_borne y)
@@ -216,7 +216,6 @@ let div z u =
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when gt_borne x2 y1 -> INTERVAL(max_borne x1 (add_borne y2 (Cst Z.one)), x2),
                                                         INTERVAL(y1, max_borne (sub_borne x2 (Cst Z.one)) y2)
   | _, _ -> BOT, BOT
-
   
   (* operator dispatch *)
   let widen = join
@@ -244,11 +243,9 @@ let div z u =
   | AST_LESS_EQUAL    -> let y',x' = geq y x in x',y'
   | AST_LESS          -> let y',x' = gt y x in x',y'
 
-
   let bwd_unary x op r = match op with
   | AST_UNARY_PLUS  -> meet x r
   | AST_UNARY_MINUS -> meet x (neg r)
-
 
   let bwd_binary x y op r = match op with
 
