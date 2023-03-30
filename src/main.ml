@@ -55,6 +55,10 @@ let main () =
      "-interval",
      Arg.Unit (fun () -> action := IntervalAnalysis.eval_prog),
      "Use the interval abstract domain";
+    
+     "-delay",
+     Arg.Int (Interpreter.set_delay_nb),
+     "Replace the first applications of widening by union";
 
      (* options to add *)
      (* -interval *)

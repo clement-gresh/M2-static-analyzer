@@ -23,6 +23,11 @@ open Domain
 (* for debugging *)
 let trace = ref false
 
+(* for delaying the widening *)
+(* let delay = ref false *)
+let delay_nb = ref 0
+
+let set_delay_nb nb = delay_nb := nb
 
 
 (* utilities *)
@@ -147,22 +152,25 @@ module Interprete(D : DOMAIN) =
         D.join t f
 
     | AST_while (e,s) ->
-        (* simple fixpoint *)
-        let rec fix (f:t -> t) (x:t) : t =
+        let rec fix (f:t -> t) (x:t) (n:int) : t =
           let fx = f x in
           if D.subset fx x then fx
-          else let xk = D.widen x fx in fix f xk
+          else 
+            if n > 0 then
+              let xk = D.join x fx in
+              fix f xk (n - 1)
+            else let xk = D.widen x fx in fix f xk 0
         in
         (* function to accumulate one more loop iteration:
-           F(X(n+1)) = X(0) U body(F(X(n))
-           we apply the loop body and add back the initial abstract state
-         *)
+          F(X(n+1)) = X(0) U body(F(X(n))
+          we apply the loop body and add back the initial abstract state
+        *)
         let f x = D.join a (eval_stat (filter x e true) s) in
         (* compute fixpoint from the initial state (i.e., a loop invariant) *)
-        let inv = fix f a in
+        let inv = fix f a !delay_nb in
         (* and then filter by exit condition *)
         filter inv e false
-        
+
     | AST_assert cond ->
         let b = filter a cond false in
         if D.subset b (D.bottom()) then filter a cond true else
