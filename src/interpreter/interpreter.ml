@@ -151,7 +151,7 @@ module Interprete(D : DOMAIN) =
         let rec fix (f:t -> t) (x:t) : t =
           let fx = f x in
           if D.subset fx x then fx
-          else fix f fx
+          else let xk = D.widen x fx in fix f xk
         in
         (* function to accumulate one more loop iteration:
            F(X(n+1)) = X(0) U body(F(X(n))
@@ -162,7 +162,7 @@ module Interprete(D : DOMAIN) =
         let inv = fix f a in
         (* and then filter by exit condition *)
         filter inv e false
-
+        
     | AST_assert cond ->
         let b = filter a cond false in
         if D.subset b (D.bottom()) then filter a cond true else
