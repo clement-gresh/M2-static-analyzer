@@ -16,7 +16,7 @@ module Intervals = (struct
   
   let top = INTERVAL(NEG_INF, POS_INF)
   
-  let const c = INTERVAL(Cst c, Cst c)
+  let const c = INTERVAL(Cst c, Cst c) (* debug : a verifier *)
 
   let print_borne a = match a with
   | NEG_INF -> "-∞"

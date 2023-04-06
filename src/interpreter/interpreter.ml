@@ -24,11 +24,12 @@ open Domain
 let trace = ref false
 
 (* for delaying the widening *)
-(* let delay = ref false *)
 let delay_nb = ref 0
-
 let set_delay_nb nb = delay_nb := nb
 
+(* for unrolling the loop before the widening *)
+let unroll_nb = ref (-1)
+let set_unroll_nb nb = unroll_nb := nb
 
 (* utilities *)
 (* ********* *)
@@ -152,24 +153,26 @@ module Interprete(D : DOMAIN) =
         D.join t f
 
     | AST_while (e,s) ->
-        let rec fix (f:t -> t) (x:t) (n:int) : t =
-          let fx = f x in
-          if D.subset fx x then fx
-          else 
-            if n > 0 then
-              let xk = D.join x fx in
-              fix f xk (n - 1)
-            else let xk = D.widen x fx in fix f xk 0
-        in
-        (* function to accumulate one more loop iteration:
-          F(X(n+1)) = X(0) U body(F(X(n))
-          we apply the loop body and add back the initial abstract state
-        *)
-        let f x = D.join a (eval_stat (filter x e true) s) in
-        (* compute fixpoint from the initial state (i.e., a loop invariant) *)
-        let inv = fix f a !delay_nb in
-        (* and then filter by exit condition *)
-        filter inv e false
+      let rec fix (f:t -> t) (x:t) (n:int) : t =
+        let fx = f x in
+        if D.subset fx x then fx
+        else 
+          if n > 0 then
+            let xk = D.join x fx in
+            fix f xk (n - 1)
+          else let xk = D.widen x fx in fix f xk 0
+      in 
+      let rec unroll env n =
+        if n = 0 then
+          let f x = D.join env (eval_stat (filter x e true) s) in
+          let inv = fix f env !delay_nb in
+          filter inv e false
+        else 
+          let inv = filter env e false in
+          let cond_stat = eval_stat (filter env e true) s in
+          let next_unroll = (unroll cond_stat (n-1))
+          in D.join next_unroll inv
+        in unroll a !unroll_nb
 
     | AST_assert cond ->
         let b = filter a cond false in

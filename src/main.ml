@@ -13,11 +13,26 @@ module ConstantAnalysis =
     (Non_relational_domain.NonRelational
        (Constant_domain.Constants))
 
-
 module IntervalAnalysis =
     Interpreter.Interprete
       (Non_relational_domain.NonRelational
-        (Interval_domain.Intervals))
+        (Interval_domain.Intervals))                (* nom_fichier.nom_module *)
+
+(* module ParityAnalysis =              (* debug : it feels like we dont need this module, only the next 2 *)
+  Interpreter.Interprete
+    (Non_relational_domain.NonRelational
+      (Parity_domain.Parity))
+
+module ParityIntervalReduction =
+  Interpreter.Interprete
+    (Non_relational_domain.NonRelational
+      (Parity_interval_reduction.ParityIntervalsReduction))
+
+module ReducedProduct =
+  Interpreter.Interprete
+    (Non_relational_domain.NonRelational
+      (Value_reduced_product.ReducedProduct)) *)
+
 
 (* parse and print filename *)
 let doit filename =
@@ -60,11 +75,14 @@ let main () =
      Arg.Int (Interpreter.set_delay_nb),
      "Replace the first applications of widening by union";
 
-     (* options to add *)
-     (* -interval *)
-     (* -delay *)
-     (* -unroll *)
-     (* -parity-interval *)
+     "-unroll",
+     Arg.Int (Interpreter.set_unroll_nb),
+     "Allows to unroll the first loop turns before the application of widening";
+     
+    (* debug: added an argument to ReducedProduct, dont know if that's right *)
+     (* "-parity-interval",
+     Arg.Unit (fun () -> action := ParityIntervalReduction.eval_prog),(*ReducedProduct(ParityIntervalReduction).eval_prog),*)
+     "operate a reduction of the parity and interval domains"; *)
 
     ]
     (* handle filenames *)
