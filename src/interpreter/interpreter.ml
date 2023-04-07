@@ -28,7 +28,7 @@ let delay_nb = ref 0
 let set_delay_nb nb = delay_nb := nb
 
 (* for unrolling the loop before the widening *)
-let unroll_nb = ref (-1)
+let unroll_nb = ref 0
 let set_unroll_nb nb = unroll_nb := nb
 
 (* utilities *)
