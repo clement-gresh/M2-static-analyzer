@@ -26,13 +26,13 @@ module IntervalAnalysis =
 module ParityIntervalReduction =
   Interpreter.Interprete
     (Non_relational_domain.NonRelational
-      (Parity_interval_reduction.ParityIntervalsReduction))
+      (Value_reduced_product.ReducedProduct(Parity_interval_reduction.ParityIntervalsReduction))) *)
 
-module ReducedProduct =
+module DisjunctionAnalysis =
   Interpreter.Interprete
-    (Non_relational_domain.NonRelational
-      (Value_reduced_product.ReducedProduct)) *)
-
+    (Disjunction_domain.Disjunctions 
+      (Non_relational_domain.NonRelational
+          (Parity_domain.Parity)))
 
 (* parse and print filename *)
 let doit filename =
