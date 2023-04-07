@@ -11,7 +11,7 @@ module Disjunctions(D:DOMAIN) = (struct         (* domain est non-relationnal*)
   let init (_:unit) = SIMPLE(D.init ())
 
     (* empty set *)
-    let bottom = assert false
+    let bottom (_:unit) = SIMPLE(D.bottom ()) (* debug : a verifier *)
 
     (* add a variable *)
     let rec add_var (a:t) (b:var) : t = match a with
@@ -55,7 +55,9 @@ module Disjunctions(D:DOMAIN) = (struct         (* domain est non-relationnal*)
     | DISJ(x1, x2), DISJ(y1, y2) -> subset x1 y1 || subset x2 y1 || subset x1 y2 || subset x2 y2
 
     (* whether the abstract element represents the empty set *)
-    let is_bottom = assert false
+    let rec is_bottom (a:t) : bool = match a with
+    | SIMPLE x -> D.is_bottom x
+    | DISJ(x, y) -> is_bottom x && is_bottom y
 
     (* prints *)
     let print = assert false
