@@ -1,8 +1,7 @@
 open Abstract_syntax_tree
 open Domain
 
-module Disjunctions(D:DOMAIN) = (struct         (* domain est non-relationnal*)
-
+module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relationnal*)
 
   type t =
   | SIMPLE of D.t
@@ -60,8 +59,25 @@ module Disjunctions(D:DOMAIN) = (struct         (* domain est non-relationnal*)
     | DISJ(x, y) -> is_bottom x && is_bottom y
 
     (* prints *)
-    let print = assert false
-    let print_all = assert false
+    let rec print (fmt:Format.formatter) (a:t) (l:var list) : unit = match a with (* if a var is in varlist, then we print it*)
+      | SIMPLE x ->
+        (Format.fprintf fmt " [ ";
+        D.print fmt x l;
+        Format.fprintf fmt " ] ";)
+      | DISJ(x, y) ->
+        (print fmt x l;
+        Format.fprintf fmt " - ";
+        print fmt y l; )
+
+    let rec print_all (fmt:Format.formatter) (a:t) : unit = match a with
+    | SIMPLE x ->
+      (Format.fprintf fmt " [ ";
+      D.print_all fmt x;
+      Format.fprintf fmt " ] ";)
+    | DISJ(x, y) ->
+      ( print_all fmt x;
+      Format.fprintf fmt " - ";
+      print_all fmt y; )
 
   
 end : DOMAIN)
