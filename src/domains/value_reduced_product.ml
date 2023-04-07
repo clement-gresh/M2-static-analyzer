@@ -80,6 +80,9 @@ module ReducedProduct(R : VALUE_REDUCTION) = (struct
   let is_bottom = assert false
 
   (* print abstract element *)
-  let print = assert false
+  let print fmt (x1,x2) = 
+    (A.print fmt x1);
+    Format.fprintf fmt " ∧ ";
+    (B.print fmt x2);
 
 end : VALUE_DOMAIN)

@@ -1,9 +1,9 @@
 open Abstract_syntax_tree
-open Value_domain
- 
+
 module Parity = (struct
   (* create methods is_even, etc.
      need to add the method in value_domain  *)
+
   type t =
   | BOT
   | EVEN
@@ -136,5 +136,5 @@ module Parity = (struct
     (* this is sound, but not precise *)
     x, y
 
-end : VALUE_DOMAIN)
+end)
  
