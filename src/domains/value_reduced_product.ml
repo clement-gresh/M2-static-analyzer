@@ -57,7 +57,10 @@ module ReducedProduct(R : VALUE_REDUCTION) = (struct
 
   (* set-theoretic operations *)
 
-  let join = assert false
+  let join (x1,y1) (x2,y2) = 
+    let x = A.join x1 x2 in
+    let y = B.join y1 y2 in
+    R.reduce (x, y)
 
   let meet = assert false
 

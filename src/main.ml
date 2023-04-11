@@ -18,7 +18,7 @@ module IntervalAnalysis =
       (Non_relational_domain.NonRelational
         (Interval_domain.Intervals))                (* nom_fichier.nom_module *)
 
-(* module ParityAnalysis =              (* debug : it feels like we dont need this module, only the next 2 *)
+module ParityAnalysis =              (* debug : it feels like we dont need this module, only the next 2 *)
   Interpreter.Interprete
     (Non_relational_domain.NonRelational
       (Parity_domain.Parity))
@@ -26,7 +26,7 @@ module IntervalAnalysis =
 module ParityIntervalReduction =
   Interpreter.Interprete
     (Non_relational_domain.NonRelational
-      (Value_reduced_product.ReducedProduct(Parity_interval_reduction.ParityIntervalsReduction))) *)
+      (Value_reduced_product.ReducedProduct(Parity_interval_reduction.ParityIntervalsReduction))) 
 
 module DisjunctionAnalysis =
   Interpreter.Interprete
@@ -80,9 +80,9 @@ let main () =
      "Allows to unroll the first loop turns before the application of widening";
      
     (* debug: added an argument to ReducedProduct, dont know if that's right *)
-     (* "-parity-interval",
+     "-parity-interval",
      Arg.Unit (fun () -> action := ParityIntervalReduction.eval_prog),(*ReducedProduct(ParityIntervalReduction).eval_prog),*)
-     "operate a reduction of the parity and interval domains"; *)
+     "operate a reduction of the parity and interval domains";
 
     ]
     (* handle filenames *)
