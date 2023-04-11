@@ -43,6 +43,10 @@ module ReducedProduct(R : VALUE_REDUCTION) = (struct
 
   (* interval *)
   let rand = assert false
+  (*(x1,y1) (x2,y2) = 
+    let x = A.rand x1 x2 in
+    let y = B.rand y1 y2 in
+    R.reduce (x, y)*)
 
 
   (* arithmetic operations *)
@@ -62,9 +66,15 @@ module ReducedProduct(R : VALUE_REDUCTION) = (struct
     let y = B.join y1 y2 in
     R.reduce (x, y)
 
-  let meet = assert false
+  let meet (x1,y1) (x2,y2) = 
+    let x = A.meet x1 x2 in
+    let y = B.meet y1 y2 in
+    R.reduce (x, y)
 
-  let widen = assert false
+  let widen (x1,y1) (x2,y2) = 
+    let x = A.widen x1 x2 in
+    let y = B.widen y1 y2 in
+    R.reduce (x, y)
 
 
   (* comparison operations (filters) *)
@@ -77,7 +87,7 @@ module ReducedProduct(R : VALUE_REDUCTION) = (struct
 
 
   (* subset inclusion of concretizations *)
-  let subset = assert false
+  let subset (x1,y1) (x2,y2) = A.subset x1 x2 && B.subset y1 y2
 
   (* check the emptiness of the concretization *)
   let is_bottom = assert false
