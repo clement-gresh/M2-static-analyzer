@@ -28,11 +28,11 @@ module ParityIntervalReduction =
     (Non_relational_domain.NonRelational
       (Value_reduced_product.ReducedProduct(Parity_interval_reduction.ParityIntervalsReduction))) 
 
-module DisjunctionAnalysis =
+(* module DisjunctionAnalysis =
   Interpreter.Interprete
     (Disjunction_domain.Disjunctions 
       (Non_relational_domain.NonRelational
-          (Parity_domain.Parity)))
+          (Parity_domain.Parity))) *)
 
 (* parse and print filename *)
 let doit filename =
