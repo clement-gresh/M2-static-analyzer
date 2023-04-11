@@ -30,14 +30,10 @@ module ParityIntervalsReduction = (struct
     -> (A.EVEN, B.INTERVAL(Cst (Z.add c Z.one), Cst (Z.sub d Z.one)))
   
   (* interval of type [even, odd] or [odd, even] *)
-  | A.ODD, B.INTERVAL(Cst c, Cst d) when rest c = Z.zero && rest d = Z.one
-    -> (A.ODD, B.INTERVAL(Cst (Z.add c Z.one), Cst d))
-  | A.ODD, B.INTERVAL(Cst c, Cst d) when rest c = Z.one && rest d = Z.zero
-    -> (A.ODD, B.INTERVAL(Cst c, Cst (Z.sub d Z.one)))
-  | A.EVEN, B.INTERVAL(Cst c, Cst d) when rest c = Z.zero && rest d = Z.one
-    -> (A.EVEN, B.INTERVAL(Cst c, Cst (Z.sub d Z.one)))
-  | A.EVEN, B.INTERVAL(Cst c, Cst d) when rest c = Z.one && rest d = Z.zero
-    -> (A.EVEN, B.INTERVAL(Cst (Z.add c Z.one), Cst d))
+  | A.ODD, B.INTERVAL(Cst c, d) when rest c = Z.zero -> (A.ODD, B.INTERVAL(Cst (Z.add c Z.one), d))
+  | A.ODD, B.INTERVAL(c, Cst d) when rest d = Z.zero -> (A.ODD, B.INTERVAL(c, Cst (Z.sub d Z.one)))
+  | A.EVEN, B.INTERVAL(c, Cst d) when rest d = Z.one -> (A.EVEN, B.INTERVAL(c, Cst (Z.sub d Z.one)))
+  | A.EVEN, B.INTERVAL(Cst c, d) when rest c = Z.one -> (A.EVEN, B.INTERVAL(Cst (Z.add c Z.one), d))
 
   | x, y -> (x, y)
 
