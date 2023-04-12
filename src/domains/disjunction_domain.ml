@@ -66,8 +66,18 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
        Si on obtient bottom, on rejette le résultat. Sinon on l'ajoute.
        On se retrouve dans le pire cas avec un nombre quadratique de feuilles *)
 
+    let rec join_elts a b = match a, b with (* cours 11, slide 27 *)
+    | SIMPLE x, SIMPLE y -> D.join x y
+    | SIMPLE x, DISJ(y1, y2) -> D.join x (join_elts y1 y2)
+    | DISJ(x1, x2), SIMPLE y -> D.join (join_elts x1 x2) y
+    | DISJ(x1, x2), DISJ(y1, y2) -> D.join (join_elts x1 x2) (join_elts y1 y2)
+
     (* widening *)
-    let widen = assert false (* cours 11, slide 27 *)
+    let widen (a:t) (b:t) : t = match a, b with (* cours 11, slide 27 *)
+    | SIMPLE x, SIMPLE y -> SIMPLE(D.widen x y)
+    | SIMPLE x, DISJ(y1, y2) -> SIMPLE(D.widen x (join_elts y1 y2 ))
+    | DISJ(x1, x2), SIMPLE y -> SIMPLE(D.widen (join_elts x1 x2)  y)
+    | DISJ(x1, x2), DISJ(y1, y2) -> SIMPLE(D.widen (join_elts x1 x2) (join_elts y1 y2 ))
     (* A priori, il faut :
        - jusqu'à n, faire l'union entre An et ce qu'on obtient à la sortie du tour de boucle suivant (avec An en entrée et qu'on appelle Bn+1)
        - après n, faire l'élargissement entre l'union de An et l'union de Bn+1
