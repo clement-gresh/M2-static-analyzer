@@ -1,0 +1,2 @@
+tests/30_disjunctions_intervals/0101_decl.c:3.2-12: [ x in even ∧ [0;0] ]
+analysis ended

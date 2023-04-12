@@ -28,11 +28,11 @@ module ParityIntervalReduction =
     (Non_relational_domain.NonRelational
       (Value_reduced_product.ReducedProduct(Parity_interval_reduction.ParityIntervalsReduction))) 
 
-(* module DisjunctionAnalysis =
+module DisjunctionIntervalsAnalysis =
   Interpreter.Interprete
     (Disjunction_domain.Disjunctions 
       (Non_relational_domain.NonRelational
-          (Parity_domain.Parity))) *)
+          (Interval_domain.Intervals)))            (*Parity_domain.Parity*)
 
 (* parse and print filename *)
 let doit filename =
@@ -79,11 +79,13 @@ let main () =
      Arg.Int (Interpreter.set_unroll_nb),
      "Allows to unroll the first loop turns before the application of widening";
      
-    (* debug: added an argument to ReducedProduct, dont know if that's right *)
      "-parity-interval",
-     Arg.Unit (fun () -> action := ParityIntervalReduction.eval_prog),(*ReducedProduct(ParityIntervalReduction).eval_prog),*)
+     Arg.Unit (fun () -> action := ParityIntervalReduction.eval_prog),
      "operate a reduction of the parity and interval domains";
-
+     
+     "-disjunction-interval",
+     Arg.Unit (fun () -> action := DisjunctionIntervalsAnalysis.eval_prog),
+     "use the disjunction of intervals";
     ]
     (* handle filenames *)
     (fun filename -> files := (!files)@[filename])

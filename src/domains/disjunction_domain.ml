@@ -28,7 +28,8 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
       | DISJ(x, y) -> DISJ(assign x v expr, assign y v expr)
 
     (* filter environments to keep only those satisfying the comparison *)
-    let compare = assert false (* rec calls to compare ? Checks what has been done in other domains, like intervals *)
+    let compare a _ _ _ = a
+       (*assert false*) (* rec calls to compare ? Checks what has been done in other domains, like intervals *)
 
     (* abstract join *)
     let join (a:t) (b:t) : t = DISJ(a, b) (* join arbre1 arbre 2 = DISJ(arbre1, arbre2) *)
