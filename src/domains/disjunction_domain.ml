@@ -27,22 +27,18 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
       | SIMPLE x -> SIMPLE(D.assign x v expr)
       | DISJ(x, y) -> DISJ(assign x v expr, assign y v expr)
 
-    (* filter environments to keep only those satisfying the comparison *)
-    let compare a _ _ _ = a
-       (*assert false*) (* rec calls to compare ? Checks what has been done in other domains, like intervals *)
-
-    (* abstract join *)
-    let join (a:t) (b:t) : t = DISJ(a, b) (* join arbre1 arbre 2 = DISJ(arbre1, arbre2) *)
-
     (* whether the abstract element represents the empty set *)
     let rec is_bottom (a:t) : bool = match a with
     | SIMPLE x -> D.is_bottom x
     | DISJ(x, y) -> is_bottom x && is_bottom y
 
+    (* abstract join *)
+    let join (a:t) (b:t) : t = DISJ(a, b) (* join arbre1 arbre 2 = DISJ(arbre1, arbre2) *)
+
     (* abstract intersection *)
     let rec meet (a:t) (b:t) : t = match a, b with
       | SIMPLE x, SIMPLE y -> SIMPLE(D.meet x y)
-      | SIMPLE x, DISJ(y1, y2) ->                       (* si on on a bottom, on rejette le résultat *)
+      | SIMPLE x, DISJ(y1, y2) | DISJ(y1, y2), SIMPLE x ->                    (* si on on a bottom, on rejette le résultat *)
         if is_bottom (meet (SIMPLE x) y1) then
           if is_bottom (meet (SIMPLE x) y2) then
             bottom ()
@@ -52,8 +48,7 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
           if is_bottom (meet (SIMPLE x) y2) then
             meet (SIMPLE x) y1
           else DISJ(meet (SIMPLE x) y1, meet (SIMPLE x) y2)
-      | DISJ(_, _), SIMPLE _ -> meet b a    (* debug : est-ce que (meet a b) est bien équivalent à (meet b a) ? Si ce n'est pas le cas, il faut faire comme dans le cas précédent (i.e. 4 cas différents) *)
-      | DISJ(x1, x2), DISJ(_, _) ->                     (* si on on a bottom, on rejette le résultat *)
+      | DISJ(x1, x2), DISJ(_, _) ->                                           (* si on on a bottom, on rejette le résultat *)
         if is_bottom (meet x1 b) then
           if is_bottom (meet x2 b) then
             bottom ()
@@ -83,6 +78,21 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
        - jusqu'à n, faire l'union entre An et ce qu'on obtient à la sortie du tour de boucle suivant (avec An en entrée et qu'on appelle Bn+1)
        - après n, faire l'élargissement entre l'union de An et l'union de Bn+1
        (je ne comprend pas ce que veut dire union de An)*)
+
+    (* filter environments to keep only those satisfying the comparison *)
+    let compare a _ _ _ = a
+    (* let rec compare (a:t) (e1:int_expr) (op:compare_op) (e1:int_expr) : t = match a with
+    | SIMPLE x -> meet (SIMPLE x) (SIMPLE(D.compare e1 e2 op))
+    | DISJ(x, y) ->
+      if is_bottom (compare x e1 op e1) then
+        if is_bottom (compare y e1 op e1) then
+          bottom
+        else SIMPLE(compare y e1 op e1)
+      else
+        if is_bottom (compare y e1 op e1) then
+          SIMPLE(compare x e1 op e1)
+        else DISJ(compare x e1 op e1, compare y e1 op e1) *)
+       (*assert false*) (* rec calls to compare ? Checks what has been done in other domains, like intervals *)
 
     (* whether an abstract element is included in another one *)
     let rec subset (a:t) (b:t) : bool = match a, b with  (* cours 11, slide 25 : comment faire le subset ainsi que la description des limites du subset *)
