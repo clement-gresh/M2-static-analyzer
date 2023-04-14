@@ -104,22 +104,22 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
     (* prints *)
     let rec print (fmt:Format.formatter) (a:t) (l:var list) : unit = match a with (* if a var is in varlist, then we print it*)
       | SIMPLE x ->
-        (Format.fprintf fmt " [ ";
+        (Format.fprintf fmt "{ ";
         D.print fmt x l;
-        Format.fprintf fmt " ] ";)
+        Format.fprintf fmt " }";)
       | DISJ(x, y) ->
         (print fmt x l;
-        Format.fprintf fmt " - ";
+        Format.fprintf fmt ", ";
         print fmt y l; )
 
     let rec print_all (fmt:Format.formatter) (a:t) : unit = match a with
     | SIMPLE x ->
-      (Format.fprintf fmt " [ ";
+      (Format.fprintf fmt "{ ";
       D.print_all fmt x;
-      Format.fprintf fmt " ] ";)
+      Format.fprintf fmt " }";)
     | DISJ(x, y) ->
       ( print_all fmt x;
-      Format.fprintf fmt " - ";
+      Format.fprintf fmt ", ";
       print_all fmt y; )
 
   
