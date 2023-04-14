@@ -221,6 +221,7 @@ function run_test {
     #run_test_dir "tests/20_reduced" "-parity-interval"
     #run_test_dir "tests/20_reduced" "-parity-interval -trace -nonreldebug"
     run_test_dir "tests/30_disjunctions_intervals" "-disjunction-interval"
+    #run_test_dir "tests/30_disjunctions_intervals" "-disjunction-interval -trace -nonreldebug"
 
     # répertoire 30_extension à remplir
     #run_test_dir "tests/30_extension" ""
