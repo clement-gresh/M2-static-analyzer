@@ -80,18 +80,18 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
        (je ne comprend pas ce que veut dire union de An)*)
 
     (* filter environments to keep only those satisfying the comparison *)
-    let compare a _ _ _ = a
-    (* let rec compare (a:t) (e1:int_expr) (op:compare_op) (e1:int_expr) : t = match a with
-    | SIMPLE x -> meet (SIMPLE x) (SIMPLE(D.compare e1 e2 op))
+    (* let compare a _ _ _ = a *)
+    let rec compare (a:t) (e1:int_expr) (op:compare_op) (e2:int_expr) : t = match a with
+    | SIMPLE x -> SIMPLE(D.compare x e1 op e2)
     | DISJ(x, y) ->
-      if is_bottom (compare x e1 op e1) then
-        if is_bottom (compare y e1 op e1) then
-          bottom
-        else SIMPLE(compare y e1 op e1)
+      if is_bottom (compare x e1 op e2) then
+        if is_bottom (compare y e1 op e2) then
+          bottom ()
+        else compare y e1 op e2
       else
-        if is_bottom (compare y e1 op e1) then
-          SIMPLE(compare x e1 op e1)
-        else DISJ(compare x e1 op e1, compare y e1 op e1) *)
+        if is_bottom (compare y e1 op e2) then
+          compare x e1 op e2
+        else DISJ(compare x e1 op e2, compare y e1 op e2)
        (*assert false*) (* rec calls to compare ? Checks what has been done in other domains, like intervals *)
 
     (* whether an abstract element is included in another one *)
