@@ -1,2 +1,2 @@
-tests/30_disjunctions_intervals/0101_decl.c:9.2-12: { [ x in [-20;-10], y in [1;1], z in [-10;-5] ] }, { [ x in [10;20], y in [0;0], z in [5;10] ] }
+tests/30_disjunctions_intervals/0101_decl.c:3.2-12: { [ x in [0;0] ] }
 analysis ended

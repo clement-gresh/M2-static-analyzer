@@ -1,0 +1,2 @@
+tests/30_disjunctions_intervals/0112_rand_empty.c:4.2-11: { ⊥ }
+analysis ended
