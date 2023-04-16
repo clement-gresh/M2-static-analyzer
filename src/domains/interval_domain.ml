@@ -156,7 +156,7 @@ module Intervals = (struct
   (* set-theoretic operations *)
   
   let meet a b = match a, b with
-  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x2 y1 || geq_borne y2 x1 -> INTERVAL(max_borne x1 y1, min_borne x2 y2)
+  | INTERVAL(x1, x2), INTERVAL(y1, y2) when geq_borne x2 y1 && geq_borne y2 x1 -> INTERVAL(max_borne x1 y1, min_borne x2 y2)
   (*| BOT, _ | _, BOT -> BOT
   | INTERVAL(x1, x2), INTERVAL(y1, y2) when x2 < y1 || x1 > y2 -> BOT*)
   | _, _ -> BOT
