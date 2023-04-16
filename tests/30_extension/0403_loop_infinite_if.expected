@@ -1,0 +1,4 @@
+tests/30_extension/0403_loop_infinite_if.c:6.6-15: { [ x in [0;9] ] }
+tests/30_extension/0403_loop_infinite_if.c:6.6-15: { [ x in [-∞;9] ] }
+tests/30_extension/0403_loop_infinite_if.c:10.2-11: { ⊥ }, { [ x in [10;15] ] }
+analysis ended

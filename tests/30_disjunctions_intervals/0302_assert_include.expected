@@ -1,2 +1,0 @@
-tests/30_disjunctions_intervals/0302_assert_include.c:11.2-11: { [ x in [0;0] ] }, { [ x in [1;1] ] }, { [ x in [2;2] ] }
-analysis ended

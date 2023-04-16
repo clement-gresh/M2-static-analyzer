@@ -207,24 +207,20 @@ function run_test {
     DIRS=""
     HAS_ERR=0
 
-    #run_test_dir "tests/01_concrete" "-concrete"
-    #run_test_dir "tests/02_concrete_loop" "-concrete"
-    #run_test_dir "tests/03_concrete_assert" "-concrete"
-    #run_test_dir "tests/04_constant" "-constant"
-    #run_test_dir "tests/10_interval" "-interval" # + x - / Union intersection
-    #run_test_dir "tests/11_interval_cmp" "-interval" # inferior to, equal, different, strictly inferior to, bwd_binary, bwd_unary
-    #run_test_dir "tests/12_interval_loop" "-interval" # elargissement
-    #run_test_dir "tests/12_interval_loop" "-interval -trace -nonreldebug" # elargissement
-    #run_test_dir "tests/13_interval_loop_delay" "-interval -delay 3"
-    #run_test_dir "tests/14_interval_loop_delay_unroll" "-interval -unroll 3 -delay 3"
-    #run_test_dir "tests/14_interval_loop_delay_unroll" "-interval -unroll 3 -delay 3 -trace -nonreldebug"
-    #run_test_dir "tests/20_reduced" "-parity-interval"
-    #run_test_dir "tests/20_reduced" "-parity-interval -trace -nonreldebug"
-    run_test_dir "tests/30_disjunctions_intervals" "-disjunction-interval"
-    #run_test_dir "tests/30_disjunctions_intervals" "-disjunction-interval -trace -nonreldebug"
+    run_test_dir "tests/01_concrete" "-concrete"
+    run_test_dir "tests/02_concrete_loop" "-concrete"
+    run_test_dir "tests/03_concrete_assert" "-concrete"
+    run_test_dir "tests/04_constant" "-constant"
+    run_test_dir "tests/10_interval" "-interval" # + x - / Union intersection
+    run_test_dir "tests/11_interval_cmp" "-interval" # inferior to, equal, different, strictly inferior to, bwd_binary, bwd_unary
+    run_test_dir "tests/12_interval_loop" "-interval" # elargissement
+    #run_test_dir "tests/12_interval_loop" "-interval -trace -nonreldebug"
+    run_test_dir "tests/13_interval_loop_delay" "-interval -delay 3"
+    run_test_dir "tests/14_interval_loop_delay_unroll" "-interval -unroll 3 -delay 3"
+    run_test_dir "tests/20_reduced" "-parity-interval"
 
     # répertoire 30_extension à remplir
-    #run_test_dir "tests/30_extension" ""
+    run_test_dir "tests/30_extension" "-disjunction-interval"
 
     summary
     print_footer
