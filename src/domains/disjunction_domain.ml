@@ -96,10 +96,9 @@ module Disjunctions(D:DOMAIN) = (struct         (* le domaine D est non-relation
 
     (* whether an abstract element is included in another one *)
     let rec subset (a:t) (b:t) : bool = match a, b with  (* cours 11, slide 25 : comment faire le subset ainsi que la description des limites du subset *)
-    | SIMPLE x, SIMPLE y -> D.subset x y
+    | DISJ(x1, x2), y -> subset x1 y && subset x2 y
     | SIMPLE x, DISJ(y1, y2) -> subset (SIMPLE x) y1 || subset (SIMPLE x) y2
-    | DISJ(x1, x2), SIMPLE y -> subset x1 (SIMPLE y) && subset x2 (SIMPLE y)
-    | DISJ(x1, x2), DISJ(y1, y2) -> (subset x1 y1 || subset x1 y2) && (subset x2 y1 || subset x2 y2)
+    | SIMPLE x, SIMPLE y -> D.subset x y
 
     (* prints *)
     let rec print (fmt:Format.formatter) (a:t) (l:var list) : unit = match a with (* if a var is in varlist, then we print it*)
