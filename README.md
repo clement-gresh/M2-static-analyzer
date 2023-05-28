@@ -1,5 +1,7 @@
 # Projet d'analyseur statique du cours TAS
 
+Le travail réalisé par les étudiants est décrit dans les fichiers [TRAVAIL.md](TRAVAIL.md) et [RAPPORT.md](RAPPORT.md).
+
 Le but du projet est d'implanter un analyseur statique par interprétation abstraite pour un langage "jouet" impératif très simple.
 La syntaxe est inspirée de C, mais extrêmement simplifiée : le langage ne comporte que des entiers mathématiques (non bornés), les constructions *if-then-else* et la boucle *while*.
 La langage ne comporte ni pointeur, ni fonction, ni tableau, ni allocation dynamique, ni objet.
